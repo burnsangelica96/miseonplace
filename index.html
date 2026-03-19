@@ -112,7 +112,10 @@
         <div class="page-header">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div><div class="page-title">Kitchen Inventory</div><div class="page-sub">Food, proteins, dairy &amp; dry goods</div></div>
-            <button class="btn btn-primary btn-sm" onclick="openInvModal('kitchen')">+ Add Item</button>
+           <button class="btn btn-ghost btn-sm" onclick="openBulkImport('kitchen')">⬆ Bulk Import</button>
+<button class="btn btn-ghost btn-sm" onclick="openCountSheet('kitchen')">📋 Count Sheet</button>
+<button class="btn btn-primary btn-sm" onclick="openInvModal('kitchen')">+ Add Item</button>
+
           </div>
         </div>
         <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
@@ -128,7 +131,7 @@
         <div class="page-header">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div><div class="page-title">Bar Inventory</div><div class="page-sub">Spirits, wine, beer &amp; mixers</div></div>
-            <button class="btn btn-primary btn-sm" onclick="openInvModal('bar')">+ Add Item</button>
+            <button class="btn btn-ghost btn-sm" onclick="openBulkImport('bar')">⬆ Bulk Import</button> <button class="btn btn-ghost btn-sm" onclick="openCountSheet('bar')">📋 Count Sheet</button> <button class="btn btn-primary btn-sm" onclick="openInvModal('bar')">+ Add Item</button>
           </div>
         </div>
         <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
@@ -144,7 +147,7 @@
         <div class="page-header">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div><div class="page-title">Miscellaneous</div><div class="page-sub">Supplies, packaging &amp; smallwares</div></div>
-            <button class="btn btn-primary btn-sm" onclick="openInvModal('misc')">+ Add Item</button>
+            <button class="btn btn-ghost btn-sm" onclick="openBulkImport('misc')">⬆ Bulk Import</button> <button class="btn btn-ghost btn-sm" onclick="openCountSheet('misc')">📋 Count Sheet</button> <button class="btn btn-primary btn-sm" onclick="openInvModal('misc')">+ Add Item</button>
           </div>
         </div>
         <div class="card"><div class="table-wrap"><table><thead><tr><th>Item</th><th>Category</th><th>On Hand</th><th>Unit</th><th>Par</th><th>Cost/Unit</th><th>Status</th><th></th></tr></thead><tbody id="misc-tbody"></tbody></table><div id="misc-empty" class="empty-state" style="display:none"><div class="empty-icon">📦</div>No misc items yet.</div></div></div>
@@ -401,6 +404,6 @@
 </div>
 <div class="save-indicator" id="save-toast">✓ Saved</div>
 
-<script src="app.js"></script>
+<script src="inventory.js"></script> <script src="app.js"></script>
 </body>
 </html>
