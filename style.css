@@ -155,3 +155,29 @@ label{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;displa
   .nav-label{display:none}
   .brand,.location-switcher,.sidebar-footer{padding:8px 12px}
 }
+/* ─── BULK IMPORT ─────────────────────────────────────────────── */
+.bulk-hint{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7;background:var(--bg3);padding:10px 12px;border-radius:7px}
+.bulk-paste{font-family:monospace;font-size:12px;min-height:110px;resize:vertical}
+#bulk-preview-wrap{margin-top:14px;overflow-x:auto}
+#bulk-preview table input{background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:3px 6px;width:100%}
+
+/* ─── COUNT SHEET ──────────────────────────────────────────────── */
+.count-category{margin-bottom:20px}
+.count-cat-header{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--amber);padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px}
+.count-row{display:flex;justify-content:space-between;align-items:center;padding:10px 8px;border-radius:7px;transition:background .15s;border-bottom:1px solid rgba(255,255,255,0.04)}
+.count-row:last-child{border-bottom:none}
+.count-row.count-low{background:rgba(217,107,107,0.08)}
+.count-row.count-watch{background:rgba(232,168,60,0.08)}
+.count-row.count-ok{background:rgba(106,170,106,0.06)}
+.count-item-info{flex:1}
+.count-item-name{font-size:14px;font-weight:500}
+.count-item-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.count-input-wrap{display:flex;align-items:center;gap:6px}
+.count-input{width:80px;text-align:center;font-size:15px;font-weight:600;padding:7px 8px}
+.count-unit-label{font-size:11px;color:var(--muted);min-width:28px}
+#count-date{font-size:12px;color:var(--muted);margin-bottom:18px}
+
+/* ─── ORDER SHEET ──────────────────────────────────────────────── */
+.order-supplier-block{background:var(--bg3);border-radius:10px;padding:16px;margin-bottom:14px}
+.order-supplier-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.order-supplier-name{font-size:15px;font-weight:600;color:var(--text)}
