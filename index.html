@@ -347,7 +347,58 @@
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('labor-modal')">Cancel</button><button class="btn btn-primary" onclick="saveLaborPosition()">Save</button></div>
   </div>
 </div>
+<!-- BULK IMPORT MODAL -->
+<div id="modal-bulk-modal" class="modal-overlay">
+  <div class="modal" style="width:720px;max-width:96vw">
+    <div class="modal-title">Bulk Import — <span id="bulk-section-label"></span> Inventory</div>
+    <input type="hidden" id="bulk-section">
+    <div class="bulk-hint">
+      1. Open your Excel or Google Sheets<br>
+      2. Select your cells (include header row)<br>
+      3. Copy (Ctrl+C) and paste below<br>
+      <strong style="color:var(--amber)">Columns auto-detected:</strong> Name, Category, Qty, Unit, Par, Cost/Unit, Supplier
+    </div>
+    <div class="field">
+      <label>Paste your spreadsheet data here</label>
+      <textarea id="bulk-paste" class="bulk-paste" placeholder="Name&#9;Category&#9;Qty&#9;Unit&#9;Par&#9;Cost&#9;Supplier&#10;Beef Tenderloin&#9;Proteins&#9;10&#9;lbs&#9;15&#9;32.00&#9;Sysco"></textarea>
+    </div>
+    <button class="btn btn-ghost" onclick="parseBulkPaste()">Preview Import</button>
+    <div id="bulk-preview-wrap" style="display:none">
+      <div id="bulk-preview"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('bulk-modal')">Cancel</button>
+      <button class="btn btn-primary" id="bulk-import-btn" style="display:none" onclick="confirmBulkImport()">Import Items</button>
+    </div>
+  </div>
+</div>
 
+<!-- WEEKLY COUNT MODAL -->
+<div id="modal-count-modal" class="modal-overlay">
+  <div class="modal" style="width:560px;max-width:96vw">
+    <div class="modal-title" id="count-section-title">Weekly Count</div>
+    <input type="hidden" id="count-section">
+    <div id="count-date"></div>
+    <div id="count-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('count-modal')">Cancel</button>
+      <button class="btn btn-primary" id="submit-count-btn" onclick="submitCount()">Submit Count & Generate Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER SHEET MODAL -->
+<div id="modal-order-modal" class="modal-overlay">
+  <div class="modal" style="width:680px;max-width:96vw">
+    <div class="modal-title">Purchase Order Sheet</div>
+    <div id="order-date-label" style="font-size:12px;color:var(--muted);margin-top:-12px;margin-bottom:16px"></div>
+    <div id="order-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('order-modal')">Close</button>
+      <button class="btn btn-primary" onclick="printOrderSheet()">Print / Save PDF</button>
+    </div>
+  </div>
+</div>
 <div class="save-indicator" id="save-toast">✓ Saved</div>
 
 <script src="app.js"></script>
