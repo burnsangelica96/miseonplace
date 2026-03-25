@@ -67,15 +67,16 @@ async function renderInv(section) {
     .eq('section', section).order('name');
   const items = data || [];
   const tbody = document.getElementById(section + '-tbody');
-  const empty = document.getElementById(section + '-empty');
-  const card  = tbody?.closest('.card');
+  const empty     = document.getElementById(section + '-empty');
+  const tableWrap = tbody?.closest('.table-wrap');
+  const card      = tableWrap?.parentElement;
 
-  // Inject or refresh filter bar
+  // Inject or refresh filter bar — insert before .table-wrap
   let bar = document.getElementById('inv-filter-' + section);
-  if (!bar && card) {
+  if (!bar && tableWrap && card) {
     bar = document.createElement('div');
     bar.id = 'inv-filter-' + section;
-    card.insertBefore(bar, card.firstChild);
+    card.insertBefore(bar, tableWrap);
   }
   if (bar) bar.innerHTML = buildFilterBar(section, items);
 
