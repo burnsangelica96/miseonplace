@@ -290,52 +290,7 @@ async function deleteInvItem(id, section) {
   renderInv(section);
 }
 
-async function renderInv(section) {
-  if (!currentRestaurantId) return;
-  const { data } = await sb.from('inventory').select('*')
-    .eq('restaurant_id', currentRestaurantId)
-    .eq('section', section)
-    .order('name');
-  const items = data || [];
-  const tbody = document.getElementById(section + '-tbody');
-  const empty = document.getElementById(section + '-empty');
-
-  if (!items.length) {
-    tbody.innerHTML = '';
-    if (empty) empty.style.display = 'block';
-  } else {
-    if (empty) empty.style.display = 'none';
-    tbody.innerHTML = items.map(item => `
-      <tr>
-        <td><strong>${item.name}</strong>${item.supplier ? `<br><span style="font-size:11px;color:var(--muted)">${item.supplier}</span>` : ''}</td>
-        <td>${item.category || '—'}</td>
-        <td>${item.qty}</td>
-        <td>${item.unit}</td>
-        <td>${item.par_level}</td>
-        <td>$${(item.cost_per_unit || 0).toFixed(2)}</td>
-        <td>${invStatus(item.qty, item.par_level)}</td>
-        <td style="white-space:nowrap">
-          <button class="btn btn-ghost btn-sm" onclick='openInvModal("${section}", ${JSON.stringify(item).replace(/'/g, "\\'")} )'>Edit</button>
-          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="deleteInvItem('${item.id}','${section}')">Del</button>
-        </td>
-      </tr>`).join('');
-  }
-
-  if (section === 'kitchen') {
-    const low = items.filter(x => x.par_level > 0 && x.qty / x.par_level <= 0.2).length;
-    const val = items.reduce((s, x) => s + x.qty * x.cost_per_unit, 0);
-    document.getElementById('k-total').textContent = items.length;
-    document.getElementById('k-low').textContent = low;
-    document.getElementById('k-value').textContent = '$' + Math.round(val).toLocaleString();
-  }
-  if (section === 'bar') {
-    const low = items.filter(x => x.par_level > 0 && x.qty / x.par_level <= 0.2).length;
-    const val = items.reduce((s, x) => s + x.qty * x.cost_per_unit, 0);
-    document.getElementById('b-total').textContent = items.length;
-    document.getElementById('b-low').textContent = low;
-    document.getElementById('b-value').textContent = '$' + Math.round(val).toLocaleString();
-  }
-}
+// renderInv is defined in inventory.js
 
 // ─── RECIPES ───────────────────────────────────────────────────────
 function recCalcPct() {
