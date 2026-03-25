@@ -156,12 +156,12 @@ function parseBulkPaste() {
     });
   }
   const items = rows.slice(startRow).map(r => ({
-    name:r[nameIdx]||'',category:catIdx>=0?(r[catIdx]||'):'',
+    name:r[nameIdx]||'',category:catIdx>=0?(r[catIdx]||''):'',
     qty:qtyIdx>=0?(parseFloat(r[qtyIdx])||0):0,
     par_level:parIdx>=0?(parseFloat(r[parIdx])||0):0,
     unit:unitIdx>=0?(r[unitIdx]||'units'):'units',
     cost_per_unit:costIdx>=0?(parseFloat(r[costIdx])||0):0,
-    supplier:supplierIdx>=0?(r[supplierIdx]||'):''
+    supplier:supplierIdx>=0?(r[supplierIdx]||''):''
   })).filter(i=>i.name);
   if (!items.length) {
     document.getElementById('bulk-preview').innerHTML='<div style="color:var(--red);font-size:13px">Could not parse items. Make sure you copied cells including headers.</div>';
