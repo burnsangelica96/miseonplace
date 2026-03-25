@@ -295,11 +295,8 @@
     <div class="row"><div class="field" style="flex:1"><label>Category</label><input type="text" id="inv-cat" placeholder="e.g. Proteins"></div><div class="field" style="flex:1"><label>Unit</label><select id="inv-unit"><option>lbs</option><option>oz</option><option>kg</option><option>g</option><option>bottles</option><option>cases</option><option>units</option><option>gallons</option><option>qt</option><option>cups</option><option>ea</option></select></div></div>
     <div class="row"><div class="field" style="flex:1"><label>Qty on Hand</label><input type="number" id="inv-qty" placeholder="0" min="0" step="0.01"></div><div class="field" style="flex:1"><label>Par Level</label><input type="number" id="inv-par" placeholder="0" min="0" step="0.01"></div></div>
     <div class="field"><label>Cost per Unit ($)</label><input type="number" id="inv-cost" step="0.01" placeholder="0.00"></div>
-<div class="field">
-  <label>Suppliers & Pricing</label>
-  <div id="inv-suppliers-list"></div>
-  <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addSupplierRow()">+ Add Supplier</button>
-</div>    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('inv-modal')">Cancel</button><button class="btn btn-primary" onclick="saveInvItem()">Save Item</button></div>
+    <div class="field"><label>Supplier (optional)</label><input type="text" id="inv-supplier" placeholder="e.g. Sysco"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('inv-modal')">Cancel</button><button class="btn btn-primary" onclick="saveInvItem()">Save Item</button></div>
   </div>
 </div>
 
@@ -404,7 +401,7 @@
 
 <div class="save-indicator" id="save-toast">✓ Saved</div>
 
-<script src="inventory.js?v=3.1"></script>
-<script src="app.js?v=3.1"></script>
+<script src="inventory.js?v=3.2"></script>
+<script src="app.js?v=3.2"></script>
 </body>
 </html>
