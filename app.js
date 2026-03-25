@@ -57,13 +57,16 @@ async function initApp(user) {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
 
+  // Load profile
   const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
   currentProfile = profile;
   document.getElementById('user-name').textContent = profile?.full_name || user.email;
 
+  // Load restaurants
   const { data: rests } = await sb.from('restaurants').select('*').order('name');
   restaurants = rests || [];
 
+  // Populate switcher
   const sel = document.getElementById('restaurant-select');
   sel.innerHTML = restaurants.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
   currentRestaurantId = restaurants[0]?.id || null;
@@ -165,35 +168,119 @@ function openInvModal(section, item = null) {
     document.getElementById('inv-qty').value = item.qty;
     document.getElementById('inv-par').value = item.par_level;
     document.getElementById('inv-cost').value = item.cost_per_unit;
-    document.getElementById('inv-supplier').value = item.supplier || '';
+    loadItemSuppliers(item.id);
   } else {
-    ['inv-id','inv-name','inv-cat','inv-qty','inv-par','inv-cost','inv-supplier'].forEach(id => document.getElementById(id).value = '');
+    ['inv-id','inv-name','inv-cat','inv-qty','inv-par','inv-cost'].forEach(id =>
+      document.getElementById(id).value = '');
     document.getElementById('inv-unit').value = 'lbs';
+    document.getElementById('inv-suppliers-list').innerHTML = '';
+    addSupplierRow();
   }
   openModal('inv-modal');
 }
 
+async function loadItemSuppliers(itemId) {
+  const list = document.getElementById('inv-suppliers-list');
+  list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">Loading suppliers...</div>';
+  const { data } = await sb.from('item_suppliers').select('*')
+    .eq('inventory_id', itemId).order('is_preferred', { ascending: false });
+  list.innerHTML = '';
+  const suppliers = data || [];
+  if (!suppliers.length) { addSupplierRow(); return; }
+  suppliers.forEach(s => addSupplierRow(s));
+}
+
+function addSupplierRow(s = null) {
+  const list = document.getElementById('inv-suppliers-list');
+  const row = document.createElement('div');
+  row.className = 'supplier-row';
+  row.innerHTML = `
+    <input type="hidden" class="sup-id" value="${s?.id || ''}">
+    <input class="sup-name" placeholder="Supplier name (e.g. Sysco)" value="${s?.supplier_name || ''}">
+    <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+      <input type="number" class="sup-cost" step="0.01" placeholder="Cost/unit ($)"
+        value="${s?.cost_per_unit || ''}" style="flex:1">
+      <label style="display:flex;align-items:center;gap:5px;font-size:11px;
+        text-transform:none;letter-spacing:0;color:var(--muted);white-space:nowrap;margin:0;cursor:pointer">
+        <input type="checkbox" class="sup-preferred" ${s?.is_preferred ? 'checked' : ''}
+          style="width:auto;padding:0;margin:0;cursor:pointer"> Preferred
+      </label>
+      <button onclick="this.closest('.supplier-row').remove()"
+        style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:0 4px;flex-shrink:0">×</button>
+    </div>
+    <input class="sup-notes" placeholder="Notes (optional)" value="${s?.notes || ''}"
+      style="margin-top:6px">`;
+  list.appendChild(row);
+}
+
 async function saveInvItem() {
-  const id = document.getElementById('inv-id').value;
+  const id      = document.getElementById('inv-id').value;
   const section = document.getElementById('inv-section').value;
+  const supRows = document.querySelectorAll('.supplier-row');
+
+  // Use preferred supplier price as default cost
+  let defaultCost = parseFloat(document.getElementById('inv-cost').value) || 0;
+  supRows.forEach(r => {
+    if (r.querySelector('.sup-preferred')?.checked) {
+      const c = parseFloat(r.querySelector('.sup-cost')?.value);
+      if (!isNaN(c) && c > 0) defaultCost = c;
+    }
+  });
+  // If no preferred, use first supplier price
+  if (!defaultCost && supRows.length) {
+    const c = parseFloat(supRows[0].querySelector('.sup-cost')?.value);
+    if (!isNaN(c) && c > 0) defaultCost = c;
+  }
+
   const item = {
     restaurant_id: currentRestaurantId,
     section,
-    name: document.getElementById('inv-name').value.trim(),
-    category: document.getElementById('inv-cat').value.trim(),
-    unit: document.getElementById('inv-unit').value,
-    qty: parseFloat(document.getElementById('inv-qty').value) || 0,
-    par_level: parseFloat(document.getElementById('inv-par').value) || 0,
-    cost_per_unit: parseFloat(document.getElementById('inv-cost').value) || 0,
-    supplier: document.getElementById('inv-supplier').value.trim(),
-    updated_at: new Date().toISOString()
+    name:          document.getElementById('inv-name').value.trim(),
+    category:      document.getElementById('inv-cat').value.trim(),
+    unit:          document.getElementById('inv-unit').value,
+    qty:           parseFloat(document.getElementById('inv-qty').value) || 0,
+    par_level:     parseFloat(document.getElementById('inv-par').value) || 0,
+    cost_per_unit: defaultCost,
+    supplier:      '',
+    updated_at:    new Date().toISOString()
   };
   if (!item.name) return;
-  if (id) { await sb.from('inventory').update(item).eq('id', id); }
-  else { await sb.from('inventory').insert(item); }
+
+  let itemId = id;
+  if (id) {
+    await sb.from('inventory').update(item).eq('id', id);
+  } else {
+    const { data } = await sb.from('inventory').insert(item).select().single();
+    itemId = data?.id;
+  }
+
+  // Save each supplier row
+  if (itemId) {
+    for (const row of supRows) {
+      const supId   = row.querySelector('.sup-id')?.value;
+      const supName = row.querySelector('.sup-name')?.value?.trim();
+      const supCost = parseFloat(row.querySelector('.sup-cost')?.value) || 0;
+      const supPref = row.querySelector('.sup-preferred')?.checked || false;
+      const supNote = row.querySelector('.sup-notes')?.value?.trim() || '';
+      if (!supName) continue;
+      if (supId) {
+        await sb.from('item_suppliers').update({
+          supplier_name: supName, cost_per_unit: supCost,
+          is_preferred: supPref, notes: supNote
+        }).eq('id', supId);
+      } else {
+        await sb.from('item_suppliers').insert({
+          inventory_id: itemId, supplier_name: supName,
+          cost_per_unit: supCost, is_preferred: supPref, notes: supNote
+        });
+      }
+    }
+  }
+
   showToast();
   closeModal('inv-modal');
   renderInv(section);
+  clearInvCache();
 }
 
 async function deleteInvItem(id, section) {
@@ -276,8 +363,11 @@ async function saveRecipe() {
     updated_at: new Date().toISOString()
   };
   if (!rec.name) return;
-  if (id) { await sb.from('recipes').update(rec).eq('id', id); }
-  else { await sb.from('recipes').insert(rec); }
+  if (id) {
+    await sb.from('recipes').update(rec).eq('id', id);
+  } else {
+    await sb.from('recipes').insert(rec);
+  }
   showToast();
   closeModal('recipe-modal');
   document.getElementById('rec-id').value = '';
@@ -452,7 +542,7 @@ function openSopModal(section, sop = null) {
     document.getElementById('sop-tag-input').value = sop.tag || '';
     document.getElementById('sop-steps-input').value = (sop.steps || []).join('\n');
   } else {
-    ['sop-id-input','sop-title-input','sop-tag-input','sop-steps-input'].forEach(id => document.getElementById(id).value = '');
+    ['sop-id-input', 'sop-title-input', 'sop-tag-input', 'sop-steps-input'].forEach(id => document.getElementById(id).value = '');
   }
   openModal('sop-modal');
 }
@@ -480,7 +570,7 @@ async function renderSops(section) {
   const items = data || [];
   const list = document.getElementById(section + '-sop-list');
   const empty = document.getElementById(section + '-empty');
-  const tagColors = { Opening:'badge-teal', Closing:'badge-amber', Service:'badge-blue', Safety:'badge-red', Cleaning:'badge-blue', Allergens:'badge-red' };
+  const tagColors = { Opening: 'badge-teal', Closing: 'badge-amber', Service: 'badge-blue', Safety: 'badge-red', Cleaning: 'badge-blue', Allergens: 'badge-red' };
   if (!items.length) { list.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
   if (empty) empty.style.display = 'none';
   list.innerHTML = items.map(sop => `
@@ -535,7 +625,7 @@ async function renderPnl() {
   const pnl = data?.[0];
   const empty = document.getElementById('pnl-empty');
   if (!pnl) {
-    ['pnl-rev','pnl-cogs','pnl-labor','pnl-net'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
+    ['pnl-rev', 'pnl-cogs', 'pnl-labor', 'pnl-net'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
     if (empty) empty.style.display = 'block';
     document.getElementById('pnl-benchmarks').innerHTML = '';
     return;
@@ -551,21 +641,21 @@ async function renderPnl() {
   document.getElementById('pnl-labor').textContent = fmt(labor);
   document.getElementById('pnl-net').textContent = fmt(net);
   const metrics = [
-    { label:'Food Cost %', val: pnl.revenue ? Math.round(pnl.food_cogs/pnl.revenue*100)+'%' : '—', target:'28%', pct: pnl.revenue ? pnl.food_cogs/pnl.revenue : 0, color:'var(--amber)' },
-    { label:'Bar Cost %',  val: pnl.revenue ? Math.round(pnl.bar_cogs/pnl.revenue*100)+'%'  : '—', target:'22%', pct: pnl.revenue ? pnl.bar_cogs/pnl.revenue  : 0, color:'var(--blue)'  },
-    { label:'Labor %',     val: pnl.revenue ? Math.round(labor/pnl.revenue*100)+'%'           : '—', target:'30%', pct: pnl.revenue ? labor/pnl.revenue           : 0, color:'var(--teal)'  },
-    { label:'Prime Cost',  val: pnl.revenue ? Math.round((cogs+labor)/pnl.revenue*100)+'%'   : '—', target:'60%', pct: pnl.revenue ? (cogs+labor)/pnl.revenue    : 0, color:'var(--amber)' },
-    { label:'Net Margin',  val: pnl.revenue ? Math.round(net/pnl.revenue*100)+'%'             : '—', target:'15%', pct: pnl.revenue ? net/pnl.revenue             : 0, color:'var(--green)' },
+    { label: 'Food Cost %', val: pnl.revenue ? Math.round(pnl.food_cogs / pnl.revenue * 100) + '%' : '—', target: '28%', pct: pnl.revenue ? pnl.food_cogs / pnl.revenue : 0, color: 'var(--amber)' },
+    { label: 'Bar Cost %', val: pnl.revenue ? Math.round(pnl.bar_cogs / pnl.revenue * 100) + '%' : '—', target: '22%', pct: pnl.revenue ? pnl.bar_cogs / pnl.revenue : 0, color: 'var(--blue)' },
+    { label: 'Labor %', val: pnl.revenue ? Math.round(labor / pnl.revenue * 100) + '%' : '—', target: '30%', pct: pnl.revenue ? labor / pnl.revenue : 0, color: 'var(--teal)' },
+    { label: 'Prime Cost', val: pnl.revenue ? Math.round((cogs + labor) / pnl.revenue * 100) + '%' : '—', target: '60%', pct: pnl.revenue ? (cogs + labor) / pnl.revenue : 0, color: 'var(--amber)' },
+    { label: 'Net Margin', val: pnl.revenue ? Math.round(net / pnl.revenue * 100) + '%' : '—', target: '15%', pct: pnl.revenue ? net / pnl.revenue : 0, color: 'var(--green)' },
   ];
-  document.getElementById('pnl-benchmarks').innerHTML =
-    `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">` +
+  document.getElementById('pnl-benchmarks').innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">` +
     metrics.map(m => `<div>
       <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
         <span>${m.label}</span><span style="color:${m.color}">${m.val} <span style="color:var(--muted);font-size:11px">(target ${m.target})</span></span>
       </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,Math.round(m.pct*100*3))}%;background:${m.color}"></div></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100, Math.round(m.pct * 100 * 3))}%;background:${m.color}"></div></div>
     </div>`).join('') + '</div>';
 
+  // Pre-fill modal
   document.getElementById('pnl-month-in').value = pnl.month || '';
   document.getElementById('pnl-rev-in').value = pnl.revenue;
   document.getElementById('pnl-fcogs-in').value = pnl.food_cogs;
@@ -639,6 +729,8 @@ async function deleteLabor(id) {
 // ─── BOOT ──────────────────────────────────────────────────────────
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) { await initApp(session.user); }
+  if (session?.user) {
+    await initApp(session.user);
+  }
   fcAddRow('', 1, 'oz', 0);
 })();
