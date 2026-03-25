@@ -739,3 +739,56 @@ label{
   .nav-label{display:none}
   .brand,.location-switcher,.sidebar-footer{padding:8px 12px}
 }
+
+/* ─── INVENTORY FILTER BAR ───────────────────────────────────────── */
+.inv-filter-bar{
+  display:flex;gap:8px;align-items:center;
+  flex-wrap:wrap;margin-bottom:16px;
+  padding-bottom:16px;
+  border-bottom:1px solid var(--border);
+}
+.inv-search{
+  flex:1;min-width:160px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border2);
+  border-radius:2px;
+  color:var(--ivory);
+  font-family:var(--sans);
+  font-size:12px;font-weight:300;
+  padding:8px 12px;outline:none;
+  transition:border .15s;
+}
+.inv-search:focus{border-color:var(--olive)}
+.inv-search::placeholder{color:rgba(255,255,255,0.2)}
+.inv-filter-select{
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border2);
+  border-radius:2px;
+  color:var(--ivory);
+  font-family:var(--sans);
+  font-size:11px;font-weight:300;
+  padding:8px 10px;outline:none;
+  cursor:pointer;
+  letter-spacing:0.3px;
+  width:auto;
+}
+.inv-filter-select:focus{border-color:var(--olive)}
+
+/* ─── INGREDIENT DROPDOWN ────────────────────────────────────────── */
+.ing-dropdown{border-radius:2px}
+.ing-drop-item{
+  padding:10px 12px;
+  cursor:pointer;
+  border-bottom:1px solid var(--border);
+  transition:background .1s;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.ing-drop-item:last-child{border-bottom:none}
+.ing-drop-item:hover{background:rgba(255,255,255,0.04)}
+.ing-row-build{
+  display:flex;gap:6px;
+  margin-bottom:8px;
+  align-items:center;
+}
